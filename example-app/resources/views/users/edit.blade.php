@@ -42,12 +42,14 @@
                 <input type="file" name="photo" id="photo" class="form-control-file">
             </div>
             <div class="form-group">
-                <img src="{{ asset('storage/photos/' . $user->photo) }}" alt="User  Photo" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                @if($user->photo)
+                    <img src="data:image/jpeg;base64,{{ base64_encode($user->photo) }}" alt="User  Photo" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                @else
+                    <img src="{{ asset('storage/photos/noimage.jpg') }}" alt="No Image" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                @endif
             </div>
             <button type="submit" class="btn btn-primary">Обновить пользователя</button>
-
-      </form>
-  </div>
+        </form>
+    </div>
 </body>
 </html>
-

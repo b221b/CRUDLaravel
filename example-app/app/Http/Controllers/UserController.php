@@ -9,20 +9,20 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $users = User::all();
         return view('users.index', compact('users'));
     }
 
-    public function create() {
+    public function create()
+    {
         return view('users.create');
     }
 
     public function store(Request $request)
 {
-    // отладка
-    Log::info($request->all());
-
+    // Валидация входящих данных
     $request->validate([
         'name' => 'required',
         'birthday' => 'required|date',
@@ -33,80 +33,81 @@ class UserController extends Controller
         'photo' => 'image|nullable|max:1999',
     ]);
 
-        if ($request->hasFile('photo')) {
-            $filenameWithExt = $request->file('photo')->getClientOriginalName();
-            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension = $request->file('photo')->getClientOriginalExtension();
-            $fileNameToStore = $filename.'_'.time().'.'.$extension;
-            $path = $request->file('photo')->storeAs('public/photos', $fileNameToStore);
-        } else {
-            $fileNameToStore = 'noimage.jpg';
-        }
+    Log::info('User  creation validated successfully.');
 
-        User::create([
-            'name' => $request->name,
-            'birthday' => $request->birthday,
-            'telephone' => $request->telephone,
-            'email' => $request->email,
-            'login' => $request->login,
-            'password' => bcrypt($request->password),
-            'photo' => $fileNameToStore,
-        ]);
-
-        // отладка
-        Log::info('User  created successfully');
-
-        return redirect()->route('users.index')->with('success', 'User  created successfully.');
+    // Обработка загрузки фото
+    $photoData = null;
+    if ($request->hasFile('photo')) {
+        $photoData = file_get_contents($request->file('photo')->getRealPath());
+        Log::info('Photo uploaded and converted to binary data.');
     }
 
-    public function edit(User $user) {
+    // Создание нового пользователя
+    User::create([
+        'name' => $request->name,
+        'birthday' => $request->birthday,
+        'telephone' => $request->telephone,
+        'email' => $request->email,
+        'login' => $request->login,
+        'password' => bcrypt($request->password),
+        'photo' => $photoData, // Сохраняем бинарные данные
+    ]);
+
+    Log::info('User  created successfully: ' . $request->name);
+
+    return redirect()->route('users.index')->with('success', 'User  created successfully.');
+}
+
+    public function edit(User $user)
+    {
         return view('users.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user) {
-        $request->validate([
-            'name' => 'required',
-            'birthday' => 'required|date',
-            'telephone' => 'required',
-            'email' => 'required|email',
-            'login' => 'required',
-            'password' => 'nullable|min:6',
-            'photo' => 'image|nullable|max:1999',
-        ]);
+    public function update(Request $request, User $user)
+{
+    $request->validate([
+        'name' => 'required',
+        'birthday' => 'required|date',
+        'telephone' => 'required',
+        'email' => 'required|email',
+        'login' => 'required',
+        'password' => 'nullable|min:6',
+        'photo' => 'image|nullable|max:1999',
+    ]);
 
-        if ($request->hasFile('photo')) {
-            // Удалите старое фото, если оно существует
-            if ($user->photo && $user->photo != 'noimage.jpg') {
-                Storage::delete('public/photos/'.$user->photo);
-            }
-            $filenameWithExt = $request->file('photo')->getClientOriginalName();
-            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension = $request->file('photo')->getClientOriginalExtension();
-            $fileNameToStore = $filename.'_'.time().'.'.$extension;
-            $path = $request->file('photo')->storeAs('public/photos', $fileNameToStore);
-            $user->photo = $fileNameToStore;
-        }
+    Log::info('User  update validated successfully for user: ' . $user->id);
 
-        // обновление полей если были внесены изменения
-        $data = $request->only('name', 'birthday', 'telephone', 'email', 'login');
-
-        // обновление пароля, только в том случае, если был введен новый, в противном случае сохраняется прежний пароль
-        if ($request->filled('password')) {
-            $data['password'] = bcrypt($request->password);
-        }
-
-        $user->update($data);
-
-        return redirect()->route('users.index')->with('success', 'User  updated successfully.');
+    if ($request->hasFile('photo')) {
+        // Сохранение нового изображения в бинарном формате
+        $photoData = file_get_contents($request->file('photo')->getRealPath());
+        $user->photo = $photoData; // Обновляем поле с фото
+        Log::info('New photo uploaded and converted to binary data for user: ' . $user->id);
     }
 
-    public function destroy(User $user) {
-        // удаление картинки
+    // Обновление полей, если были внесены изменения
+    $data = $request->only('name', 'birthday', 'telephone', 'email', 'login');
+
+    // Обновление пароля, только если был введен новый
+    if ($request->filled('password')) {
+        $data['password'] = bcrypt($request->password);
+    }
+
+    // Обновление пользователя
+    $user->update($data);
+    Log::info('User  updated successfully: ' . $user->id);
+    
+    return redirect()->route('users.index')->with('success', 'User  updated successfully.');
+}
+
+
+    public function destroy(User $user)
+    {
+        // Удаление картинки, если она существует и не является изображением по умолчанию
         if ($user->photo && $user->photo != 'noimage.jpg') {
-            Storage::delete('public/photos/'.$user->photo);
+            Storage::delete('public/photos/' . $user->photo);
         }
 
-        // удаление пользователя
+        // Удаление пользователя
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'User  deleted successfully.');

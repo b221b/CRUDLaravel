@@ -36,8 +36,14 @@
                         <td>{{ $user->telephone }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->login }}</td>
-                        <td><img src="{{ asset('storage/photos/' . $user->photo) }}" alt="User  Photo" style="max-width: 100px; max-height: 100px;"></td>
                         <td>
+                          @if($user->photo)
+                              <img src="data:image/jpeg;base64,{{ base64_encode($user->photo) }}" alt="User  Photo" style="max-width: 100px; max-height: 100px;">
+                          @else
+                              <img src="{{ asset('storage/photos/noimage.jpg') }}" alt="No Image" style="max-width: 100px; max-height: 100px;">
+                          @endif
+                      </td>
+                      <td>
                             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
                             <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
                                 @csrf
