@@ -41,14 +41,16 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
-        @inertia
 
         <div class="container">
             <h1>Добро пожаловать на главную страницу!</h1>
     
             <!-- Кнопка для перехода на страницу c пользователями -->
             <a href="{{ route('users.index') }}" class="btn btn-primary">Пользователи</a>
+
         </div>
         
+        @inertia
+
     </body>
 </html>
