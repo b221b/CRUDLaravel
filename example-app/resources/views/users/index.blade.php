@@ -4,47 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список пользователей</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}"> <!-- Подключите CSS, если нужно -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Список пользователей</h1>
-
+    <div class="container mt-5">
+        <h1 class="mb-4">Список пользователей</h1>
+        <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">Создать нового пользователя</a>
+        
         @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
+            <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-
-        <table class="table">
+        
+        <table class="table table-bordered">
             <thead>
                 <tr>
-                    {{-- <th>ID</th> --}}
                     <th>ФИО</th>
                     <th>Дата рождения</th>
-                    <th>Моб. телефон</th>
-                    <th>E-mail</th>
+                    <th>Телефон</th>
+                    <th>Email</th>
                     <th>Логин</th>
                     <th>Фото</th>
+                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($users as $user)
                     <tr>
-                        {{-- <td>{{ $user->id }}</td> --}}
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->birthday }}</td>
                         <td>{{ $user->telephone }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->login }}</td>
-                        <td>{{ $user->password }}</td>
-                        <td>{{ $user->photo }}</td>
+                        <td><img src="{{ asset('storage/photos/' . $user->photo) }}" alt="User  Photo" style="max-width: 100px; max-height: 100px;"></td>
                         <td>
-                            @if($user->photo)
-                                <img src="{{ asset('storage/' . $user->photo) }}" alt="Фото" style="width: 50px; height: auto;">
-                            @else
-                                Нет фото
-                            @endif
+                            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
+                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">Удалить</button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach

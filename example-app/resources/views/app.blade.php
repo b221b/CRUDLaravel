@@ -46,8 +46,8 @@
         <div class="container">
             <h1>Добро пожаловать на главную страницу!</h1>
     
-            <!-- Кнопка для перехода на страницу создания пользователя -->
-            <a href="{{ route('users.create') }}" class="btn btn-primary">Пользователи</a>
+            <!-- Кнопка для перехода на страницу c пользователями -->
+            <a href="{{ route('users.index') }}" class="btn btn-primary">Пользователи</a>
         </div>
         
     </body>

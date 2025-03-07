@@ -2,34 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         $users = User::all();
         return view('users.index', compact('users'));
     }
 
-    public function create()
-    {
+    public function create() {
         return view('users.create');
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'birthday' => 'required|date',
-            'telephone' => 'required',
-            'email' => 'required|email|unique:users',
-            'login' => 'required|unique:users',
-            'password' => 'required|min:6',
-            'photo' => 'image|nullable|max:1999',
-        ]);
+{
+    // отладка
+    Log::info($request->all());
+
+    $request->validate([
+        'name' => 'required',
+        'birthday' => 'required|date',
+        'telephone' => 'required',
+        'email' => 'required|email|unique:users',
+        'login' => 'required|unique:users',
+        'password' => 'required|min:6',
+        'photo' => 'image|nullable|max:1999',
+    ]);
 
         if ($request->hasFile('photo')) {
             $filenameWithExt = $request->file('photo')->getClientOriginalName();
@@ -51,16 +53,17 @@ class UserController extends Controller
             'photo' => $fileNameToStore,
         ]);
 
+        // отладка
+        Log::info('User  created successfully');
+
         return redirect()->route('users.index')->with('success', 'User  created successfully.');
     }
 
-    public function edit(User $user)
-    {
+    public function edit(User $user) {
         return view('users.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user)
-    {
+    public function update(Request $request, User $user) {
         $request->validate([
             'name' => 'required',
             'birthday' => 'required|date',
@@ -70,7 +73,7 @@ class UserController extends Controller
             'password' => 'nullable|min:6',
             'photo' => 'image|nullable|max:1999',
         ]);
-    
+
         if ($request->hasFile('photo')) {
             // Удалите старое фото, если оно существует
             if ($user->photo && $user->photo != 'noimage.jpg') {
@@ -83,28 +86,27 @@ class UserController extends Controller
             $path = $request->file('photo')->storeAs('public/photos', $fileNameToStore);
             $user->photo = $fileNameToStore;
         }
-    
-        // Обновляем поля, если они были изменены
+
+        // обновление полей если были внесены изменения
         $data = $request->only('name', 'birthday', 'telephone', 'email', 'login');
-        
-        // Обновляем пароль только если он предоставлен
+
+        // обновление пароля, только в том случае, если был введен новый, в противном случае сохраняется прежний пароль
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
         }
-    
-        $user->update($data);
-    
-        return redirect()->route('users.index')->with('success', 'User  updated successfully.');
-    }    
 
-    public function destroy(User $user)
-    {
-        // Удалите фото, если оно существует
+        $user->update($data);
+
+        return redirect()->route('users.index')->with('success', 'User  updated successfully.');
+    }
+
+    public function destroy(User $user) {
+        // удаление картинки
         if ($user->photo && $user->photo != 'noimage.jpg') {
             Storage::delete('public/photos/'.$user->photo);
         }
 
-        // Удалите пользователя
+        // удаление пользователя
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'User  deleted successfully.');
