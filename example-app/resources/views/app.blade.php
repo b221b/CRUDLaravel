@@ -42,5 +42,13 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        <div class="container">
+            <h1>Добро пожаловать на главную страницу!</h1>
+    
+            <!-- Кнопка для перехода на страницу создания пользователя -->
+            <a href="{{ route('users.create') }}" class="btn btn-primary">Пользователи</a>
+        </div>
+        
     </body>
 </html>
