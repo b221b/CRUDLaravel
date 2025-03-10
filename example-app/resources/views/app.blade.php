@@ -49,7 +49,11 @@
             <a href="{{ route('users.index') }}" class="btn btn-primary">Пользователи</a>
 
         </div>
-        
+        <div class="container">
+            <!-- Кнопка для перехода на страницу cо списком услуг -->
+            <a href="{{ route('servis.index') }}" class="btn btn-primary">Услуги</a>
+
+        </div>
         @inertia
 
     </body>
