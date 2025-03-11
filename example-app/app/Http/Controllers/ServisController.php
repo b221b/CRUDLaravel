@@ -26,6 +26,7 @@ class ServisController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
+            'status' => 'boolean',
         ]);
 
         Servis::create($request->all());
@@ -47,6 +48,7 @@ class ServisController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
+            'status' => 'boolean',
         ]);
 
         $servis = Servis::findOrFail($id);
